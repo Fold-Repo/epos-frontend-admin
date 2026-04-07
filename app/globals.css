@@ -1,26 +1,188 @@
 @import "tailwindcss";
 
+@plugin "tailwindcss-debug-screens";
+@plugin './hero.mts';
+@source '../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
+@custom-variant dark (&:is(.dark *));
+
+/* ================= Light Theme (default) ================= */
 :root {
+  /* FONTS — Sequel Sans via next/font on <body> (--font-sequel-sans), same as Ravella */
+  --font-sans: var(--font-sequel-sans), sans-serif;
+
+  /* TEXT SIZES — match Ravella app/globals.css */
+  --text-xs: 0.78125rem; /* 12.5px */
+  --text-sm: 0.875rem; /* 14px */
+  --text-base: 1rem; /* 16px */
+  --text-lg: 1.12rem; /* 18px */
+  --text-xl: 1.25rem; /* 20px */
+  --text-2xl: 1.5rem; /* 24px */
+  --text-3xl: 1.875rem; /* 30px */
+  --text-4xl: 2.25rem; /* 36px */
+  --text-5xl: 3rem; /* 48px */
+
+  /* Base surface tokens */
   --background: #ffffff;
   --foreground: #171717;
+}
+
+/* ================= Dark Theme (with .dark class) ================= */
+.dark {
+  --background: #030712;
+  --foreground: #ededed;
+}
+
+/* ================= Tailwind Theme Tokens ================= */
+@theme {
+  /* ================= Primary (Blue) ================= */
+  --color-primary-100: #E6EEFA;
+  --color-primary-200: #B3D0F2;
+  --color-primary-300: #80B1EA;
+  --color-primary-400: #4D93E1;
+  --color-primary-500: #1A74D9; /* Main button */
+  --color-primary-600: #0A4DCC; /* Base */
+  --color-primary-700: #083A9C; /* Button hover */
+  --color-primary-800: #05286D; /* Darkest */
+
+  /* ================= Action (Yellow) ================= */
+  --color-yellow-100: #FFF9E6; /* Lightest highlight bg */
+  --color-yellow-200: #FFF0C5;
+  --color-yellow-300: #FFDA80;
+  --color-yellow-400: #FFC107; /* Base */
+  --color-yellow-500: #E6AE06; /* Button hover */
+  --color-yellow-600: #B38805;
+  --color-yellow-700: #806103;
+  --color-yellow-800: #4D3B02; /* Darkest text */
+
+  /* ================= Neutrals (Gray) ================= */
+  --color-neutral-100: #F9F9F9; /* Page background */
+  --color-neutral-200: #E0E0E0; /* Borders & dividers */
+  --color-neutral-300: #BDBDBD; /* Disabled state */
+  --color-neutral-400: #828282; /* Placeholder text */
+  --color-neutral-500: #4F4F4F; /* Secondary text */
+  --color-neutral-600: #333333;
+  --color-neutral-700: #1A1A1A; /* Primary text */
+  --color-neutral-800: #0A0A0A; /* Headlines */
+  --color-neutral-900: #000000;
+
+  /* ================= System ================= */
+  --color-success: #28A745;
+  --color-error: #DC3545;
+  --color-warning: #FFC107; /* Re-use action-400 */
+
+  /* EPOS merchant app brand — mirrors e-pos/app/globals.css @theme */
+  --color-primary: #8b5cf6;
+  --color-deep-purple: #581c87;
+  --color-lilac: #c084fc;
+  --color-soft-lilac: #ddd6fe;
+  --color-epos-text-primary: #2a2e45;
+  --color-epos-text-secondary: #585f81;
+  --color-epos-light-gray: #f3f4f6;
+  --color-dashboard-sidebar: #f7f5ff;
+
+  /* KPI metric cards — muted accents (Ravella-style, not full brand saturation) */
+  --color-kpi-1: #5c6d8a;
+  --color-kpi-2: #4f5668;
+  --color-kpi-3: #5c6069;
+  --color-kpi-4: #4a6b60;
+  --color-kpi-5: #7a6e48;
+  --color-kpi-6: #8b735c;
+
+  --color-text-color: var(--color-neutral-700);
+  --color-dark: #1e1e1e;
+  --color-white-smoke: #f5f5f5;
+  --spacing-66: 16.5rem;
+  --ease-soft-in-out: cubic-bezier(0.33, 1, 0.68, 1);
+
+  /* ================= Surfaces ================= */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  /* ================= Fonts ================= */
+  --font-sans: var(--font-sans);
+
+  /* ================= Text Sizes ================= */
+  --text-xs: var(--text-xs);
+  --text-sm: var(--text-sm);
+  --text-base: var(--text-base);
+  --text-lg: var(--text-lg);
+  --text-xl: var(--text-xl);
+  --text-2xl: var(--text-2xl);
+  --text-3xl: var(--text-3xl);
+  --text-4xl: var(--text-4xl);
+  --text-5xl: var(--text-5xl);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* ================= Base Body ================= */
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: var(--text-base);
 }
+
+/* ================= Container ================= */
+.container {
+  @apply w-full mx-auto px-5 lg:px-14 max-w-screen-sm sm:max-w-3xl md:max-w-5xl lg:max-w-7xl xl:max-w-screen-2xl;
+}
+
+
+/* ================= Utilities ================= */
+@layer utilities {
+
+}
+
+/* ================= Components ================= */
+@layer components {
+
+  /* ================= Forms ================= */
+  .form-group {
+    @apply mb-2
+  }
+
+  .form-control {
+    @apply block w-full px-3 py-2.5 md:py-3 text-[13px] border border-neutral-200 bg-white rounded-lg outline-none transition-colors duration-300 text-neutral-700 placeholder:text-neutral-500;
+  }
+
+  .form-control:focus {
+    @apply border-success ring-2 ring-success/25;
+  }
+
+  .form-control.is-invalid {
+    @apply border-error ring-1 ring-error/15;
+  }
+
+  .form-label {
+    @apply block mb-1 text-sm text-neutral-400;
+  }
+
+  select.form-control {
+    @apply appearance-none;
+  }
+
+  textarea.form-control {
+    @apply min-h-[120px] resize-y;
+  }
+}
+
+
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-scroll {
+  animation: scroll 15s linear infinite;
+  width: max-content;
+}
+
