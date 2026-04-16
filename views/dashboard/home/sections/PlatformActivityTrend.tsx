@@ -5,41 +5,19 @@ import { LuActivity } from "react-icons/lu";
 import { ArrowTrendingUpIcon } from "@heroicons/react/24/outline";
 import type { TooltipContentProps } from "recharts";
 
-// ======================= DATE HELPERS =======================
-function startOfWeekSunday(d: Date): Date {
-  const copy = new Date(d);
-  const day = copy.getDay();
-  copy.setDate(copy.getDate() - day);
-  copy.setHours(0, 0, 0, 0);
-  return copy;
-}
+type PlatformActivityPoint = {
+  day: string;
+  orders: number;
+  date: string;
+};
 
-function addDays(d: Date, n: number): Date {
-  const copy = new Date(d);
-  copy.setDate(copy.getDate() + n);
-  return copy;
-}
-
-// ======================= WEEKDAY LABELS =======================
-const dayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
-
-// ======================= GET WEEK ORDER VOLUME =======================
-function getWeekOrderVolume() {
-  const weekStart = startOfWeekSunday(new Date());
-  const orders = [1240, 1380, 1520, 1410, 1680, 1590, 1720];
-  return orders.map((count, i) => {
-    const date = addDays(weekStart, i);
-    return {
-      day: dayLabels[i],
-      orders: count,
-      date: date.toISOString().slice(0, 10),
-    };
-  });
+interface PlatformActivityTrendProps {
+  data?: PlatformActivityPoint[];
 }
 
 // ======================= PLATFORM ACTIVITY TREND =======================
-export default function PlatformActivityTrend() {
-  const chartData = getWeekOrderVolume();
+export default function PlatformActivityTrend({ data }: PlatformActivityTrendProps) {
+  const chartData = data ?? [];
 
   // ======================= CHART TOOLTIP =======================
   function CustomTooltip({ active, payload }: TooltipContentProps) {

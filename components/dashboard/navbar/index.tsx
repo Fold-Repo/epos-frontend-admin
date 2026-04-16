@@ -3,7 +3,12 @@
 import { Bars2Icon } from "@heroicons/react/24/solid";
 import { Button } from "@heroui/react";
 import type React from "react";
+import { useEffect } from "react";
 import SearchInput from "@/components/reusable/SearchInput";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { fetchProfile, selectProfile } from "@/store/slice";
+import { getCookie } from "@/utils";
+import { AUTH_TOKEN_KEY } from "@/types";
 import NavDropdown from "./NavDropdown";
 
 interface NavBarProps {
@@ -11,6 +16,16 @@ interface NavBarProps {
 }
 
 const NavBar: React.FC<NavBarProps> = ({ setOpen }) => {
+  const dispatch = useAppDispatch();
+  const profile = useAppSelector(selectProfile);
+
+  useEffect(() => {
+    const token = getCookie(AUTH_TOKEN_KEY);
+    if (token && !profile) {
+      dispatch(fetchProfile());
+    }
+  }, [dispatch, profile]);
+
   return (
     <header className="z-50 flex w-full flex-wrap bg-white py-2.5 sm:flex-nowrap sm:justify-start">
 

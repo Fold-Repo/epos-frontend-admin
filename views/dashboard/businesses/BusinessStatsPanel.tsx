@@ -49,7 +49,7 @@ export default function BusinessStatsPanel({ business }: BusinessStatsPanelProps
         />
         <StatRow
           label="Total sales"
-          value={formatCurrency(stats.totalSales, "NGN")}
+          value={formatCurrency(stats.totalSales)}
         />
         <StatRow
           label="Products listed"
@@ -57,7 +57,7 @@ export default function BusinessStatsPanel({ business }: BusinessStatsPanelProps
         />
         <StatRow
           label="Avg. order value"
-          value={formatCurrency(stats.avgOrderValue, "NGN")}
+          value={formatCurrency(stats.avgOrderValue)}
         />
         <StatRow label="Last order" value={lastOrder} />
       </div>

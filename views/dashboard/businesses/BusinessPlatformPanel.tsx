@@ -4,47 +4,22 @@ import { DashboardCard } from "@/components";
 import { cn } from "@/lib/classname";
 import type {
   AdminBusiness,
-  AdminPersonaSummary,
-  AdminStripeSummary,
 } from "@/types/admin-business";
 import { Chip } from "@heroui/react";
 import {
   CreditCardIcon,
   IdentificationIcon,
 } from "@heroicons/react/24/outline";
+import { getPersonaStatusMeta, getStripeStatusMeta } from "./status";
 
 type BusinessPlatformPanelProps = {
   business: AdminBusiness;
 };
 
-function stripeStatus(stripe: AdminStripeSummary) {
-  switch (stripe) {
-    case "live":
-      return { label: "Completed", className: "bg-emerald-50 text-emerald-800" };
-    case "onboarding":
-      return { label: "Pending", className: "bg-amber-50 text-amber-950" };
-    default:
-      return { label: "Not started", className: "bg-neutral-100 text-neutral-600" };
-  }
-}
-
-function personaStatus(status: AdminPersonaSummary) {
-  switch (status) {
-    case "completed":
-      return { label: "Completed", className: "bg-emerald-50 text-emerald-800" };
-    case "started":
-      return { label: "Started", className: "bg-sky-50 text-sky-950" };
-    case "failed":
-      return { label: "Failed", className: "bg-red-50 text-red-800" };
-    default:
-      return { label: "Pending", className: "bg-amber-50 text-amber-950" };
-  }
-}
-
 // ======================= PLATFORM & VERIFICATION (ADMIN SIDEBAR) =======================
 export default function BusinessPlatformPanel({ business }: BusinessPlatformPanelProps) {
-  const stripe = stripeStatus(business.stripe);
-  const persona = personaStatus(business.personaStatus);
+  const stripe = getStripeStatusMeta(business.stripe);
+  const persona = getPersonaStatusMeta(business.personaStatus);
 
   return (
     <DashboardCard

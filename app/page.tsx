@@ -1,5 +1,10 @@
-import { redirect } from "next/navigation";
+import { LoginView } from "@/views";
+import { Suspense } from "react";
 
 export default function HomePage() {
-  redirect("/dashboard");
+  return (
+    <Suspense fallback={null}>
+      <LoginView />
+    </Suspense>
+  );
 }

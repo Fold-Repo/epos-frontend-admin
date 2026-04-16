@@ -1,86 +1,97 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { endOfDay, startOfDay } from "date-fns";
+import { useMemo } from "react";
 import {
   DashboardBreadCrumb,
   DashboardCard,
   FilterBar,
   Pagination,
 } from "@/components";
+import { useQueryParams } from "@/hooks";
+import { useGetAdminBusinesses } from "@/services";
+import type {
+  AdminBusinessListRow,
+  AdminBusinessesIdentityFilter,
+  AdminBusinessesStripeFilter,
+  AdminBusinessesSort,
+} from "@/types/admin-business";
 import {
   AdjustmentsHorizontalIcon,
   CreditCardIcon,
   UserCircleIcon,
 } from "@heroicons/react/24/outline";
 import BusinessesTable from "./BusinessesTable";
-import { MOCK_BUSINESSES } from "./mock-data";
+import {
+  normalizeAccountStatus,
+  normalizePersonaStatus,
+  normalizeStripeStatus,
+} from "./status";
 
 // ======================= BUSINESSES VIEW =======================
 export default function BusinessesView() {
-  const [search, setSearch] = useState("");
-  const [identityFilter, setIdentityFilter] = useState("all");
-  const [stripeFilter, setStripeFilter] = useState("all");
-  const [sortBy, setSortBy] = useState("newest");
-  const [rangeStart, setRangeStart] = useState(() => startOfDay(new Date(2023, 0, 1)));
-  const [rangeEnd, setRangeEnd] = useState(() => endOfDay(new Date()));
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 7;
+  const { searchParams, updateQueryParams } = useQueryParams();
 
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    let rows = [...MOCK_BUSINESSES];
+  const currentPage = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
+  const itemsPerPage = Math.max(1, parseInt(searchParams.get("limit") || "20", 10));
+  const searchValue = searchParams.get("search") || "";
+  const identityFilter =
+    (searchParams.get("identity") as AdminBusinessesIdentityFilter) || "all";
+  const stripeFilter =
+    (searchParams.get("stripe") as AdminBusinessesStripeFilter) || "all";
+  const sortBy = (searchParams.get("sort") as AdminBusinessesSort) || "newest";
+  const startDate = searchParams.get("start_date");
+  const endDate = searchParams.get("end_date");
 
-    if (q) {
-      rows = rows.filter(
-        (b) =>
-          b.businessname.toLowerCase().includes(q) ||
-          String(b.businessId).includes(q) ||
-          b.ownerEmail.toLowerCase().includes(q) ||
-          b.ownerName.toLowerCase().includes(q) ||
-          b.businesstype.toLowerCase().includes(q),
-      );
-    }
+  const apiQueryParams = useMemo(
+    () => ({
+      page: currentPage,
+      limit: itemsPerPage,
+      search: searchValue.trim() || null,
+      identity: identityFilter === "all" ? undefined : identityFilter,
+      stripe: stripeFilter === "all" ? undefined : stripeFilter,
+      sort: sortBy === "newest" ? undefined : sortBy,
+      start_date: startDate || null,
+      end_date: endDate || null,
+    }),
+    [
+      currentPage,
+      itemsPerPage,
+      searchValue,
+      identityFilter,
+      stripeFilter,
+      sortBy,
+      startDate,
+      endDate,
+    ]
+  );
 
-    if (identityFilter === "verified") {
-      rows = rows.filter((b) => b.personaStatus === "completed");
-    } else if (identityFilter === "pending") {
-      rows = rows.filter((b) => b.personaStatus !== "completed");
-    }
+  const rangeStart = startDate ? new Date(`${startDate}T00:00:00`) : undefined;
+  const rangeEnd = endDate ? new Date(`${endDate}T23:59:59`) : undefined;
 
-    if (stripeFilter === "live") {
-      rows = rows.filter((b) => b.stripe === "live");
-    } else if (stripeFilter === "onboarding") {
-      rows = rows.filter((b) => b.stripe === "onboarding");
-    } else if (stripeFilter === "none") {
-      rows = rows.filter((b) => b.stripe === "not_connected");
-    }
+  const { data: businessesResponse, isLoading, isError } = useGetAdminBusinesses(
+    apiQueryParams
+  );
 
-    const from = rangeStart.getTime();
-    const to = rangeEnd.getTime();
-    rows = rows.filter((b) => {
-      const t = new Date(b.createdAt).getTime();
-      return t >= from && t <= to;
-    });
+  const pageRows: AdminBusinessListRow[] = useMemo(() => {
+    return (
+      businessesResponse?.data.map((item) => ({
+        id: String(item.business_id),
+        businessId: item.business_id,
+        businessname: item.business_name,
+        businesstype: item.type,
+        logo: null,
+        ownerEmail: item.owner_email,
+        ownerName: "",
+        storeCount: item.stores,
+        personaStatus: normalizePersonaStatus(item.identity_status),
+        stripe: normalizeStripeStatus(item.stripe_status),
+        accountStatus: normalizeAccountStatus(item.business_status),
+        createdAt: item.registered_at,
+      })) ?? []
+    );
+  }, [businessesResponse]);
 
-    rows.sort((a, b) => {
-      const ta = new Date(a.createdAt).getTime();
-      const tb = new Date(b.createdAt).getTime();
-      return sortBy === "oldest" ? ta - tb : tb - ta;
-    });
-
-    return rows;
-  }, [search, identityFilter, stripeFilter, sortBy, rangeStart, rangeEnd]);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [search, identityFilter, stripeFilter, sortBy, rangeStart, rangeEnd]);
-
-  const totalItems = filtered.length;
-  const pageRows = useMemo(() => {
-    const start = (currentPage - 1) * itemsPerPage;
-    return filtered.slice(start, start + itemsPerPage);
-  }, [filtered, currentPage]);
+  const totalItems = businessesResponse?.pagination.total ?? 0;
 
   const filterItems = [
     {
@@ -90,11 +101,17 @@ export default function BusinessesView() {
       showChevron: false,
       items: [
         { label: "Identity: All", key: "all" },
-        { label: "Identity: Verified", key: "verified" },
+        { label: "Identity: Completed", key: "completed" },
+        { label: "Identity: Started", key: "started" },
         { label: "Identity: Pending", key: "pending" },
+        { label: "Identity: Failed", key: "failed" },
       ],
       value: identityFilter,
-      onChange: (key: string) => setIdentityFilter(key),
+      onChange: (key: string) =>
+        updateQueryParams({
+          identity: key === "all" ? null : key,
+          page: 1,
+        }),
     },
     {
       type: "dropdown" as const,
@@ -105,10 +122,14 @@ export default function BusinessesView() {
         { label: "Stripe: All", key: "all" },
         { label: "Stripe: Live", key: "live" },
         { label: "Stripe: Onboarding", key: "onboarding" },
-        { label: "Stripe: Not connected", key: "none" },
+        { label: "Stripe: Not connected", key: "not_connected" },
       ],
       value: stripeFilter,
-      onChange: (key: string) => setStripeFilter(key),
+      onChange: (key: string) =>
+        updateQueryParams({
+          stripe: key === "all" ? null : key,
+          page: 1,
+        }),
     },
     {
       type: "dropdown" as const,
@@ -120,7 +141,11 @@ export default function BusinessesView() {
         { label: "Sort: Oldest registered", key: "oldest" },
       ],
       value: sortBy,
-      onChange: (key: string) => setSortBy(key),
+      onChange: (key: string) =>
+        updateQueryParams({
+          sort: key === "newest" ? null : key,
+          page: 1,
+        }),
     },
     {
       type: "dateRange" as const,
@@ -128,8 +153,13 @@ export default function BusinessesView() {
       endDate: rangeEnd,
       onChange: (value: Date | { startDate: Date; endDate: Date }) => {
         if (value instanceof Date) return;
-        setRangeStart(startOfDay(value.startDate));
-        setRangeEnd(endOfDay(value.endDate));
+        const formatDate = (date: Date) =>
+          `${date.getFullYear()}-${`${date.getMonth() + 1}`.padStart(2, "0")}-${`${date.getDate()}`.padStart(2, "0")}`;
+        updateQueryParams({
+          start_date: formatDate(value.startDate),
+          end_date: formatDate(value.endDate),
+          page: 1,
+        });
       },
     },
   ];
@@ -145,33 +175,37 @@ export default function BusinessesView() {
         <DashboardCard
           title="All businesses"
           titleClassName="font-normal"
-          bodyClassName="space-y-3 pt-2"
-        >
+          bodyClassName="space-y-3 pt-2">
           <FilterBar
             searchInput={{
               placeholder: "Search name, business ID, owner email…",
               className: "w-full md:w-80",
-              onSearch: setSearch,
+              onSearch: (value) => {
+                const trimmed = value.trim();
+                const existing = searchParams.get("search") || "";
+
+                if (!trimmed && !existing) return;
+                if (trimmed === existing) return;
+
+                updateQueryParams({
+                  search: trimmed || null,
+                  page: 1,
+                });
+              },
             }}
             items={filterItems}
           />
 
           {/* ======================= BUSINESSES TABLE ======================= */}
-          {totalItems === 0 ? (
-            <p className="py-10 text-center text-sm text-epos-text-secondary">
-              No businesses match your search or filters.
-            </p>
-          ) : (
-            <BusinessesTable data={pageRows} />
-          )}
+          <BusinessesTable data={pageRows} loading={isLoading} />
 
-          {totalItems > 0 ? (
+          {totalItems > 0 && !isError ? (
             <Pagination
               className="px-1"
               currentPage={currentPage}
               totalItems={totalItems}
               itemsPerPage={itemsPerPage}
-              onPageChange={setCurrentPage}
+              onPageChange={(page) => updateQueryParams({ page })}
               showingText="businesses"
             />
           ) : null}

@@ -7,39 +7,15 @@ import { TableCell } from "@/components/ui";
 import { DASHBOARD_ROOT } from "@/constants/dashboard-nav";
 import type { AdminBusinessListRow } from "@/types/admin-business";
 import { User, Chip, Button } from "@heroui/react";
+import { getPersonaStatusMeta, getStripeStatusMeta } from "./status";
 
 type BusinessesTableProps = {
   data: AdminBusinessListRow[];
+  loading?: boolean;
 };
 
-// ======================= STRIPE STATUS CHIP =======================
-function stripeChipProps(status: AdminBusinessListRow["stripe"]) {
-  switch (status) {
-    case "live":
-      return { className: "bg-emerald-50 text-emerald-800", text: "Live" };
-    case "onboarding":
-      return { className: "bg-amber-50 text-amber-900", text: "Onboarding" };
-    default:
-      return { className: "bg-neutral-100 text-neutral-600", text: "Not connected" };
-  }
-}
-
-// ======================= PERSONA CHIP =======================
-function personaChipProps(status: AdminBusinessListRow["personaStatus"]) {
-  switch (status) {
-    case "completed":
-      return { className: "bg-emerald-50 text-emerald-800", text: "Completed" };
-    case "started":
-      return { className: "bg-sky-50 text-sky-950", text: "Started" };
-    case "failed":
-      return { className: "bg-red-50 text-red-800", text: "Failed" };
-    default:
-      return { className: "bg-amber-50 text-amber-900", text: "Pending" };
-  }
-}
-
 // ======================= BUSINESSES TABLE =======================
-export default function BusinessesTable({ data }: BusinessesTableProps) {
+export default function BusinessesTable({ data, loading = false }: BusinessesTableProps) {
   const columns = [
     { key: "business", title: "Business" },
     { key: "id", title: "Business ID" },
@@ -56,11 +32,12 @@ export default function BusinessesTable({ data }: BusinessesTableProps) {
       className="overflow-hidden rounded-xl border border-gray-200"
       columns={columns}
       data={data}
+      loading={loading}
       rowKey={(row) => row.id}
       renderRow={(row) => {
-        const stripe = stripeChipProps(row.stripe);
-        const persona = personaChipProps(row.personaStatus);
-        const registered = moment(row.createdAt).format("D MMM YYYY");
+        const stripe = getStripeStatusMeta(row.stripe);
+        const persona = getPersonaStatusMeta(row.personaStatus);
+        const registered = moment(row.createdAt).format("llll");
 
         return (
           <>
@@ -90,12 +67,12 @@ export default function BusinessesTable({ data }: BusinessesTableProps) {
             </TableCell>
             <TableCell>
               <Chip size="sm" variant="flat" className={`text-[11px] ${persona.className}`}>
-                {persona.text}
+                {persona.label}
               </Chip>
             </TableCell>
             <TableCell>
               <Chip size="sm" variant="flat" className={`text-[11px] ${stripe.className}`}>
-                {stripe.text}
+                {stripe.label}
               </Chip>
             </TableCell>
             <TableCell>

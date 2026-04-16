@@ -29,6 +29,54 @@ export type AdminBusinessListRow = {
   createdAt: string;
 };
 
+export type AdminBusinessesSort = "newest" | "oldest";
+export type AdminBusinessesIdentityFilter = "all" | "started" | "pending" | "failed" | "completed";
+export type AdminBusinessesStripeFilter = "all" | "live" | "onboarding" | "not_connected";
+
+export type AdminBusinessesQueryParams = {
+  page?: number;
+  limit?: number;
+  search?: string | null;
+  identity?: AdminBusinessesIdentityFilter;
+  stripe?: AdminBusinessesStripeFilter;
+  sort?: AdminBusinessesSort;
+  start_date?: string | null;
+  end_date?: string | null;
+};
+
+export type AdminBusinessesApiItem = {
+  business_id: number;
+  business_name: string;
+  business_code: string;
+  type: string;
+  owner_email: string;
+  stores: number;
+  identity_status: string;
+  business_status: string;
+  stripe_status: string;
+  registered_at: string;
+};
+
+export type AdminBusinessesResponse = {
+  status: number;
+  message: string;
+  data: AdminBusinessesApiItem[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+  filters: {
+    identity: string;
+    stripe: string;
+    sort: string;
+    search: string | null;
+    start_date: string | null;
+    end_date: string | null;
+  };
+};
+
 /** e-pos `ProfileBusiness` / address-style fields for admin detail page */
 export type AdminBusinessDetailFields = {
   /** Store / storefront banner (e-pos profile branding) */
@@ -65,3 +113,42 @@ export type AdminBusiness = AdminBusinessListRow &
   AdminBusinessDetailFields & {
     stats: AdminBusinessStats;
   };
+
+export type AdminBusinessDetailsResponse = {
+  status: number;
+  message: string;
+  data: {
+    business_information: {
+      business_id: number;
+      business_status: string;
+      business_logo: string | null;
+      business_name: string;
+      contact_info: {
+        owner_name: string;
+        owner_email: string;
+        phone: string;
+      };
+      business_type: string;
+      product_service: string;
+      description: string;
+      tin: string;
+      registration_no: string;
+      location: string;
+      website: string | null;
+      date_joined: string;
+    };
+    business_stats: {
+      stores: number;
+      customers: number;
+      total_orders: number;
+      total_sales: number;
+      products_listed: number | null;
+      avg_order_value: number;
+      last_order_at: string | null;
+    };
+    platform_verification: {
+      persona_identity: string;
+      stripe_connect: string;
+    };
+  };
+};

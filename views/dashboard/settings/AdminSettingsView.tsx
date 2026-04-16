@@ -2,10 +2,7 @@
 
 import { DashboardBreadCrumb } from "@/components";
 import { DASHBOARD_ROOT } from "@/constants/dashboard-nav";
-import {
-  AccountSettingsCard,
-  PasswordSettingsCard,
-} from "./components";
+import { AdminUsersSection } from "./components";
 
 // ======================= ADMIN SETTINGS =======================
 export default function AdminSettingsView() {
@@ -17,15 +14,11 @@ export default function AdminSettingsView() {
           { label: "Settings" },
         ]}
         title="Settings"
-        description="Account, password, and notification preferences for this admin console."
+        description="System settings for this admin console."
       />
 
-      <div className="max-w-3xl space-y-4 p-5 pt-3">
-        
-        <AccountSettingsCard />
-
-        <PasswordSettingsCard />
-
+      <div className="p-5 pt-3">
+        <AdminUsersSection />
       </div>
     </>
   );

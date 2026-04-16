@@ -10,12 +10,27 @@ import { cn } from "@/lib/classname";
 
 type BusinessInformationProps = {
   business: AdminBusiness;
+  onSuspend: () => Promise<void>;
+  onActivate: () => Promise<void>;
+  isUpdatingStatus?: boolean;
 };
 
-const logoFallback = (id: string) => `https://i.pravatar.cc/150?u=${encodeURIComponent(id)}`;
+const getInitials = (name: string) =>
+  name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("") || "?";
 
 // ======================= BUSINESS INFORMATION =======================
-export default function BusinessInformation({ business }: BusinessInformationProps) {
+export default function BusinessInformation({
+  business,
+  onSuspend,
+  onActivate,
+  isUpdatingStatus = false,
+}: BusinessInformationProps) {
+  
   const [accountStatus, setAccountStatus] = useState<AdminBusinessAccountStatus>(
     business.accountStatus,
   );
@@ -23,23 +38,26 @@ export default function BusinessInformation({ business }: BusinessInformationPro
     setAccountStatus(business.accountStatus);
   }, [business.id, business.accountStatus]);
 
-  const logoSrc = business.logo ?? logoFallback(business.id);
-  const dateJoined = moment(business.createdAt).format("D MMM YYYY, HH:mm");
+  const logoSrc = business.logo;
+  const logoInitials = getInitials(business.businessname);
+  const dateJoined = moment(business.createdAt).format('llll');
 
   const isActive = accountStatus === "active";
 
-  const handleSuspend = () => {
+  const handleSuspend = async () => {
     const ok = window.confirm(
       `Suspend "${business.businessname}"? The merchant will lose access to EPOS immediately until you activate them again.`,
     );
-    if (ok) setAccountStatus("suspended");
+    if (!ok) return;
+    await onSuspend();
   };
 
-  const handleActivate = () => {
+  const handleActivate = async () => {
     const ok = window.confirm(
       `Activate "${business.businessname}"? They will be able to sign in and trade on EPOS again.`,
     );
-    if (ok) setAccountStatus("active");
+    if (!ok) return;
+    await onActivate();
   };
 
   return (
@@ -71,12 +89,16 @@ export default function BusinessInformation({ business }: BusinessInformationPro
               {isActive ? (
                 <Button size="sm" radius="md" variant="bordered"
                   className="h-8 min-h-8 border-red-200 text-[11px] font-medium text-red-800"
+                  isLoading={isUpdatingStatus}
+                  isDisabled={isUpdatingStatus}
                   onPress={handleSuspend}>
                   Suspend
                 </Button>
               ) : (
                 <Button size="sm" radius="md" color="primary"
                   className="h-8 min-h-8 text-[11px] font-medium"
+                  isLoading={isUpdatingStatus}
+                  isDisabled={isUpdatingStatus}
                   onPress={handleActivate}>
                   Activate
                 </Button>
@@ -94,12 +116,20 @@ export default function BusinessInformation({ business }: BusinessInformationPro
           <h3 className="text-xs font-medium leading-tight text-epos-text-primary">
             Business logo
           </h3>
-          <Image alt="" radius="full"
+          {logoSrc ? (
+            <Image
+              alt={business.businessname}
+              radius="full"
               className="size-16 object-cover"
               src={logoSrc}
               width={64}
               height={64}
             />
+          ) : (
+            <div className="flex size-16 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
+              {logoInitials}
+            </div>
+          )}
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-5 py-4">

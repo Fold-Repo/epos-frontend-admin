@@ -5,13 +5,14 @@ import {
   ArrowRightOnRectangleIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import type React from "react";
 import Logo from "@/components/reusable/Logo";
 import {
   DASHBOARD_ROOT,
   DASHBOARD_SECTIONS,
 } from "@/constants/dashboard-nav";
+import { logout } from "@/utils";
 import SidebarLink from "./SidebarLink";
 
 interface SidebarProps {
@@ -21,9 +22,17 @@ interface SidebarProps {
 
 const SideBar: React.FC<SidebarProps> = ({ open, setOpen }) => {
   const pathname = usePathname();
+  const router = useRouter();
 
   const handleLinkClick = () => {
     setTimeout(() => setOpen(false), 100);
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    setOpen(false);
+    router.push("/");
+    router.refresh();
   };
 
   const isLinkActive = (href: string) =>
@@ -104,7 +113,8 @@ const SideBar: React.FC<SidebarProps> = ({ open, setOpen }) => {
 
           <div className="mt-auto w-full border-t border-neutral-200/50 px-5 py-2.5">
             <Button fullWidth variant="light"
-              className="flex items-center justify-start">
+              className="flex items-center justify-start"
+              onPress={handleLogout}>
               <ArrowRightOnRectangleIcon className="size-[17px] shrink-0 text-epos-text-primary" />
               <span className="text-sm text-epos-text-primary">Logout</span>
             </Button>

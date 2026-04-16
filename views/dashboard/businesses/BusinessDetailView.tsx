@@ -10,10 +10,18 @@ import BusinessStatsPanel from "./BusinessStatsPanel";
 
 type BusinessDetailViewProps = {
   business: AdminBusiness;
+  onSuspend: () => Promise<void>;
+  onActivate: () => Promise<void>;
+  isUpdatingStatus?: boolean;
 };
 
 // ======================= BUSINESS DETAIL PAGE VIEW =======================
-export default function BusinessDetailView({ business }: BusinessDetailViewProps) {
+export default function BusinessDetailView({
+  business,
+  onSuspend,
+  onActivate,
+  isUpdatingStatus = false,
+}: BusinessDetailViewProps) {
   const registered = moment(business.createdAt).format("D MMM YYYY, HH:mm");
 
   return (
@@ -34,7 +42,12 @@ export default function BusinessDetailView({ business }: BusinessDetailViewProps
         <div className="mb-4 flex flex-wrap lg:-mx-4 lg:mb-0">
           
           <div className="mb-4 flex w-full flex-col space-y-5 px-4 lg:mb-0 lg:w-[65%] 2xl:w-[70%]">
-            <BusinessInformation business={business} />
+            <BusinessInformation
+              business={business}
+              onSuspend={onSuspend}
+              onActivate={onActivate}
+              isUpdatingStatus={isUpdatingStatus}
+            />
           </div>
 
           <div className="flex w-full flex-col space-y-5 px-4 pl-4 pr-4 lg:w-[35%] lg:pl-0 2xl:w-[30%]">

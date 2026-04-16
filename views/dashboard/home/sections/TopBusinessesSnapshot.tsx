@@ -3,6 +3,7 @@
 import { DashboardCard, TableComponent } from "@/components";
 import { TableCell } from "@/components/ui";
 import { formatCurrency } from "@/lib";
+import { useGetTopBusinesses } from "@/services";
 import { User } from "@heroui/react";
 import { LuTrophy } from "react-icons/lu";
 
@@ -11,10 +12,11 @@ type TopBusinessRow = {
   id: string;
   rank: number;
   name: string;
-  slug: string;
-  avatar: string;
+  handle: string;
+  ownerName: string;
   volume7d: number;
   stores: number;
+  payoutsStatus: string;
   stripe: boolean;
 };
 
@@ -27,62 +29,8 @@ const columns = [
   { key: "stripe", title: "Payouts" },
 ];
 
-// ======================= MOCK TOP BUSINESSES =======================
-const topBusinesses: TopBusinessRow[] = [
-  {
-    id: "b1",
-    rank: 1,
-    name: "Northwind Traders",
-    slug: "northwind",
-    avatar: "https://i.pravatar.cc/150?u=northwind",
-    volume7d: 42_800_000,
-    stores: 12,
-    stripe: true,
-  },
-  {
-    id: "b2",
-    rank: 2,
-    name: "Lagos Fresh Market",
-    slug: "lagos-fresh",
-    avatar: "https://i.pravatar.cc/150?u=lagosfresh",
-    volume7d: 31_200_000,
-    stores: 6,
-    stripe: true,
-  },
-  {
-    id: "b3",
-    rank: 3,
-    name: "Urban Electronics Co.",
-    slug: "urban-electronics",
-    avatar: "https://i.pravatar.cc/150?u=urbanelec",
-    volume7d: 28_950_000,
-    stores: 4,
-    stripe: true,
-  },
-  {
-    id: "b4",
-    rank: 4,
-    name: "GreenLeaf Organics",
-    slug: "greenleaf",
-    avatar: "https://i.pravatar.cc/150?u=greenleaf",
-    volume7d: 19_400_000,
-    stores: 3,
-    stripe: false,
-  },
-  {
-    id: "b5",
-    rank: 5,
-    name: "Studio Nine Retail",
-    slug: "studio-nine",
-    avatar: "https://i.pravatar.cc/150?u=studionine",
-    volume7d: 14_100_000,
-    stores: 2,
-    stripe: true,
-  },
-];
-
 // ======================= STRIPE PAYOUT PILL =======================
-function StripePill({ enabled }: { enabled: boolean }) {
+function StripePill({ enabled, label }: { enabled: boolean; label?: string }) {
   return (
     <span
       className={
@@ -91,13 +39,28 @@ function StripePill({ enabled }: { enabled: boolean }) {
           : "rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-800"
       }
     >
-      {enabled ? "Stripe" : "Pending"}
+      {enabled ? label || "Stripe" : label || "Pending"}
     </span>
   );
 }
 
 // ======================= TOP BUSINESSES SNAPSHOT =======================
 export default function TopBusinessesSnapshot() {
+  const { data, isLoading } = useGetTopBusinesses();
+
+  const topBusinesses: TopBusinessRow[] =
+    data?.items.map((item) => ({
+      id: item.business_id.toString(),
+      rank: item.rank,
+      name: item.business_name,
+      handle: item.handle,
+      ownerName: `${item.owner.firstname} ${item.owner.lastname}`.trim(),
+      volume7d: item.seven_day_volume,
+      stores: item.stores_count,
+      payoutsStatus: item.payouts_status,
+      stripe: item.payouts_enabled,
+    })) ?? [];
+
   return (
     <DashboardCard
       title="Top businesses"
@@ -108,6 +71,8 @@ export default function TopBusinessesSnapshot() {
       <TableComponent
         columns={columns}
         data={topBusinesses}
+        loading={isLoading}
+        skeletonRowCount={5}
         rowKey={(row) => row.id}
         tableClassName="divide-y divide-gray-100"
         renderRow={(row) => (
@@ -118,9 +83,8 @@ export default function TopBusinessesSnapshot() {
             <TableCell>
               <User
                 name={row.name}
-                description={`@${row.slug}`}
+                description={`${row.handle} • ${row.ownerName}`}
                 avatarProps={{
-                  src: row.avatar,
                   size: "sm",
                 }}
                 classNames={{
@@ -138,7 +102,7 @@ export default function TopBusinessesSnapshot() {
               <span className="text-xs text-epos-text-secondary">{row.stores}</span>
             </TableCell>
             <TableCell>
-              <StripePill enabled={row.stripe} />
+              <StripePill enabled={row.stripe} label={row.payoutsStatus} />
             </TableCell>
           </>
         )}
