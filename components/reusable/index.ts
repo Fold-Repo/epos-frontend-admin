@@ -6,6 +6,9 @@ import TrendIndicator from "./TrendIndicator";
 import DashboardCard from "./DashboardCard";
 import FilterBar from "./FilterBar";
 import FilterContainer from "./FilterContainer";
+import FilterTabs from "./FilterTabs";
+import StatusChip from "./StatusChip";
+import SummaryBox from "./SummaryBox";
 
 export {
   SearchInput,
@@ -16,4 +19,7 @@ export {
   DashboardCard,
   FilterBar,
   FilterContainer,
+  FilterTabs,
+  StatusChip,
+  SummaryBox,
 };

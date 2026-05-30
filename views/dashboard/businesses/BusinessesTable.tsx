@@ -79,16 +79,28 @@ export default function BusinessesTable({ data, loading = false }: BusinessesTab
               <span className="text-xs text-epos-text-secondary">{registered}</span>
             </TableCell>
             <TableCell className="w-px whitespace-nowrap">
-              <Button
-                as={Link}
-                href={`${DASHBOARD_ROOT}/businesses/${row.id}`}
-                size="sm"
-                radius="md"
-                variant="flat"
-                className="h-7 min-w-0 bg-primary-100 px-3 text-[11px] font-medium text-primary-700"
-              >
-                View
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  as={Link}
+                  href={`${DASHBOARD_ROOT}/businesses/${row.id}/reports`}
+                  size="sm"
+                  radius="md"
+                  variant="flat"
+                  className="h-7 min-w-0 bg-slate-100 px-3 text-[11px] font-medium text-slate-700"
+                >
+                  View reports
+                </Button>
+                <Button
+                  as={Link}
+                  href={`${DASHBOARD_ROOT}/businesses/${row.id}`}
+                  size="sm"
+                  radius="md"
+                  variant="flat"
+                  className="h-7 min-w-0 bg-primary-100 px-3 text-[11px] font-medium text-primary-700"
+                >
+                  View
+                </Button>
+              </div>
             </TableCell>
           </>
         );

@@ -1,6 +1,8 @@
 "use client";
 
 import moment from "moment";
+import Link from "next/link";
+import { Button } from "@heroui/react";
 import { DashboardBreadCrumb } from "@/components";
 import { DASHBOARD_ROOT } from "@/constants/dashboard-nav";
 import type { AdminBusiness } from "@/types/admin-business";
@@ -36,6 +38,19 @@ export default function BusinessDetailView({
         title={business.businessname}
         description={`Business ID #${business.businessId} · Registered ${registered}`}
       />
+
+      <div className="px-5 pb-2">
+        <Button
+          as={Link}
+          href={`${DASHBOARD_ROOT}/businesses/${business.id}/reports`}
+          size="sm"
+          radius="md"
+          variant="flat"
+          className="h-8 bg-primary-100 px-4 text-xs font-medium text-primary-700"
+        >
+          View reports
+        </Button>
+      </div>
 
       <div className="p-5">
 
